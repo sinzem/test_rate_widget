@@ -1,1 +1,26 @@
-{}
+{
+    "en": {
+        "langBtnLabel": "UA",
+        "nbuLabel": "NBU rate",
+        "dealLabel": "Rate in the contract",
+        "differenceLabel": "Rate difference",
+        "renewBtnLabel": "Update",
+        "successUpdateMessage": "Successful update",
+        "unsuccessUpdateMessage": "Update failed. Try again later",
+        "fetchNbuErrorMessage": "Error getting current dollar exchange rate",
+        "fetchNbuErrorView": "Unknown",
+        "fetchLangError": "Error getting language settings object"
+    },
+    "ua": {
+        "langBtnLabel": "EN",
+        "nbuLabel": "Курс НБУ",
+        "dealLabel": "Курс в угодi",
+        "differenceLabel": "Рiзниця курсiв",
+        "renewBtnLabel": "Оновити",
+        "successUpdateMessage": "Оновлення успiшне",
+        "unsuccessUpdateMessage": "Оновлення не вдалось. Спробуйте пізніше",
+        "fetchNbuErrorMessage": "Помилка при отриманні поточного курсу долара",
+        "fetchNbuErrorView": "Невідомий",
+        "fetchLangError": "Помилка отримання об'єкта мовних налаштувань"
+    }
+}
