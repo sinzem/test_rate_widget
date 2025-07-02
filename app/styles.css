@@ -1,0 +1,71 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    position: relative;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    color: #313949;
+}
+
+.rate_wrapper {
+    width: 100%;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rate_item h2, .rate_item h3 {
+    display: block;
+    font-size: 14px;
+}
+
+.rate_item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.rate_divider {
+    height: 1px;
+    width: 100%;
+    margin: 0 auto;
+    background-color: #d6d6e3;
+}
+
+.rate_btn {
+    display: block;
+    margin: 0 0 0 auto;
+    padding: 5px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    border: 1px solid #5464f2;
+    border-radius: 4px;
+    color: #5464f2;
+    background-color: #f0f1ff;
+    cursor: pointer;
+    visibility: hidden;
+}
+
+.rate_btn:hover {
+    background-color: #e8e9f7;
+}
+
+.popup {
+    position: absolute;
+    padding: 12px 24px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #5464f2;
+    border-radius: 4px;
+    background-color: #e8e9f7;
+    font-size: 14px;
+    font-weight: bold;
+    display: none;
+}
