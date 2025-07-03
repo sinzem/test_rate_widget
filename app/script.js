@@ -1,10 +1,16 @@
 window.addEventListener("DOMContentLoaded", () => {
 
+    const rateTitle = document.querySelector(".rate_title");
+    const historyTitle = document.querySelector(".history_title");
+    const historyTopic = document.querySelector(".history_topic");
+    const historyList = document.querySelector(".history_items");
     const btns = document.querySelectorAll(".btn");
-    const langBtn = document.querySelector(".lang_btn");
-    const renewBtn = document.querySelector(".rate_btn");
-    const currentRateField = document.querySelector(".rate_current");
-    const prevRateField = document.querySelector(".rate_old");
+    const langBtn = document.querySelector(".btn_lang");
+    const renewBtn = document.querySelector(".btn_rate");
+    const beginBtn = document.querySelector(".btn_begin");
+    const prevBtn = document.querySelector(".btn_prev");
+    const nbuRateField = document.querySelector(".rate_nbu");
+    const dealRateField = document.querySelector(".rate_deal");
     const differenceRateField = document.querySelector(".rate_difference");
     const popup = document.querySelector(".popup");
 
@@ -12,6 +18,9 @@ window.addEventListener("DOMContentLoaded", () => {
     let module = null;
     let dealRate = null;
     let nbuRate = null;
+    let historyArray = [];
+    let historyOffset = 0;
+    let historyLength = 0;
     let differenceRates = 0;
     let langObj;
 
@@ -33,15 +42,16 @@ window.addEventListener("DOMContentLoaded", () => {
             })
             .then(() => getNbuRate())
             .then(() => setNbuRate())
-            .then(() => setDealRate())
+            .then(() => setDealRate(dealRate))
             .then(() => setRateDifference())
-            .then(() => showBtn());
-
+            .then(() => showRenewBtn())
+            .then(() => setHistoryList());
     });
 
     ZOHO.embeddedApp.init();
 
     renewBtn.addEventListener("click", () => {
+        renewBtn.disabled = true;
         ZOHO.CRM.API.updateRecord({
             Entity: module,
             APIData: {
@@ -51,18 +61,22 @@ window.addEventListener("DOMContentLoaded", () => {
             Trigger: ["workflow"]
         }).then((data) => {
             if (data.data[0].code === "SUCCESS") {
+                dealRate = nbuRate;
+                setDealRate(nbuRate);
+                const prevDifference = differenceRates;
                 differenceRates = 0;
-                prevRateField.children[1].innerHTML = `${nbuRate.toFixed(2)}&#8372;`;
-                differenceRateField.children[1].textContent = `${differenceRates.toFixed(1)}%`;
+                setDealRate(nbuRate);
+                setRateDifference();
                 showPopup(langObj?.successUpdateMessage || langObjError.success);
+                saveRateHistory(prevDifference);
             } else {
                 showPopup(langObj?.unsuccessUpdateMessage || langObjError.error);
-                console.log(langObj?.unsuccessUpdateMessage || langObjError.error);
+                console.error(langObj?.unsuccessUpdateMessage || langObjError.error);
             }
         }).catch((e) => {
             showPopup(langObj?.unsuccessUpdateMessage || langObjError.error);
-            console.log(`${langObj?.unsuccessUpdateMessage || langObjError.error}: ${e}`);
-        });
+            console.error(`${langObj?.unsuccessUpdateMessage || langObjError.error}`, e);
+        }).finally(() => showRenewBtn());
     }) 
 
     langBtn.addEventListener("click", () => {
@@ -72,21 +86,143 @@ window.addEventListener("DOMContentLoaded", () => {
         };
         langBtn.textContent === "EN" ? langBtn.textContent = "UA" : langBtn.textContent = "EN";
         getLangObj().then(() => {
-            currentRateField.children[0].textContent = langObj.nbuLabel;
-            prevRateField.children[0].textContent = langObj.dealLabel;
+            nbuRateField.children[0].textContent = langObj.nbuLabel;
+            if (typeof nbuRate === "string") {
+                nbuRateField.children[1].textContent = `${langObj?.fetchNbuErrorView || langObjError.unk}`;
+            }
+            dealRateField.children[0].textContent = langObj.dealLabel;
             differenceRateField.children[0].textContent = langObj.differenceLabel;
             renewBtn.textContent = langObj.renewBtnLabel;
+            renewBtn.setAttribute('title', langObj.renewBtnTitle);
+            rateTitle.textContent = langObj.rateTitle;
+            historyTitle.textContent = langObj.historyTitle;
+            historyTopic.children[0].textContent = langObj.historyLabelDate;
+            historyTopic.children[1].textContent = langObj.historyLabelRate;
+            historyTopic.children[2].textContent = langObj.historyLabelDifference;
+            prevBtn.textContent = langObj.prevBtnLabel;
+            beginBtn.textContent = langObj.beginBtnLabel;
         })
     })
 
+    beginBtn.addEventListener("click", () => {
+        historyOffset = 0;
+        console.log(historyOffset);
+        setHistoryList();
+    })
+
+    prevBtn.addEventListener("click", () => {
+        console.log(historyOffset);
+        setHistoryList();
+    })
+
+    async function setHistoryList() {
+        await getRateHistory()
+            .then(() => renderHistoryList());
+    }
+
+    async function getRateHistory() {
+        const response = await ZOHO.CRM.API.searchRecord({
+            Entity:"Exchange_Rate_History",
+            Type:"criteria",
+            Query:`(Deal:equals:${id})`
+        });
+      
+        const history  = response.data;
+
+        if (!Array.isArray(history)) {
+            console.error(`${langObj?.hystoryGetError || langObjError.error}`, response);
+            return;
+        }
+
+        historyArray = history.slice(historyOffset, historyOffset + 5);
+        historyLength = history.length;
+        historyOffset += historyArray.length;
+    }
+    
+    function renderHistoryList() {
+        console.log(historyLength);
+        historyList.innerHTML = "";
+        if (!historyArray.length) {
+            beginBtn.style.display = "none";
+            prevBtn.style.display = "none";
+            const element = document.createElement("div"); 
+            element.innerHTML = ` 
+                <h2 class="title" style="margin: 32px auto;">${langObj?.historyEmpty || langObjError.unk}</h2>
+            `;
+            historyList.append(element); 
+        } 
+
+        if (historyLength > 5) {
+            beginBtn.style.display = "block";
+            prevBtn.style.display = "block";
+            prevBtn.disabled = false;
+        } else {
+            beginBtn.style.display = "none";
+            prevBtn.style.display = "none";
+            beginBtn.disabled = true;
+            prevBtn.disabled = true;
+        }
+
+        if (historyOffset > 5) {
+            beginBtn.disabled = false;
+        } else {
+            beginBtn.disabled = true;
+        }
+
+        if (historyOffset >= historyLength) {
+            prevBtn.disabled = true;
+        } else {
+            prevBtn.disabled = false;
+        }
+
+        historyArray.map(card => {
+            const element = document.createElement("div"); 
+            element.innerHTML = ` 
+                <div class="history_item">
+                    <div class="history_cell">${dateNormalizeFromZoho(new Date(card.Date))}</div>
+                    <div class="history_cell">${card.Rate}</div>
+                    <div class="history_cell">${card.Difference.toFixed(1)}%</div>
+                </div>
+                <div class="divider" style="margin-top: 8px;"></div>
+            `;
+            historyList.append(element); 
+        })
+    }
+
+    async function saveRateHistory(prevDifference) {
+        const event = {
+            Name: `${Date.now()}_${id}`,
+            Deal: id,
+            Rate: +(nbuRate.toFixed(2)),
+            Date: dateNormalizeForZoho(new Date()),
+            Rate_Source: "НБУ",
+            Difference: prevDifference
+        }
+        const response = await ZOHO.CRM.API.insertRecord({
+            Entity: "Exchange_Rate_History",
+            APIData: event
+        });
+      
+        const result = response.data?.[0];
+        if (result.code === "SUCCESS") {
+            historyOffset = 0;
+            await setHistoryList();
+            historyArray.unshift(event);
+            if (historyArray.length > 5) historyArray.length = 5;
+            renderHistoryList();
+            console.log(`${langObj?.hystoryAddSuccess || langObjError.success} ${result.details.id}`);
+        } else {
+            console.error(`${langObj?.hystoryAddError || langObjError.error} ${result.message}`);
+        }
+    }
 
     async function getLangObj() {
-        await fetch("translations/en.jso")
+        await fetch("translations/en.json")
             .then((res) => res.json())
             .then(obj => langBtn.textContent === "EN" ? langObj = obj.ua : langObj = obj.en)
-            .catch((e) => {
+            .catch((err) => {
                 showPopup("Error getting language settings object");
-                console.log(`Error getting language settings object: ${e}`);
+                console.error(`Error getting language settings object: `, err);
             });
     }
 
@@ -102,48 +238,116 @@ window.addEventListener("DOMContentLoaded", () => {
         return () => clearTimeout(timeout);
     }
     
-    function setDealRate() {
-        if (dealRate) {
-            prevRateField.children[1].innerHTML = `${dealRate.toFixed(2)}&#8372;`;
+    function setDealRate(rate) {
+        if (rate) {
+            dealRateField.children[1].innerHTML = `${rate.toFixed(2)}&#8372;`;
         };
     }
 
     function setRateDifference() {
         if (dealRate && typeof nbuRate === "number") {
-            differenceRates = (dealRate / nbuRate - 1) * 100;
-            differenceRateField.children[1].textContent = `${differenceRates.toFixed(1)}%`;
+            differenceRates = +(((dealRate / nbuRate - 1) * 100).toFixed(2));
+            if (+(differenceRates.toFixed(1)) !== 0) {
+                differenceRateField.children[1].textContent = `${differenceRates.toFixed(1)}%`;
+            } else {
+                differenceRateField.children[1].textContent = "0.0%";
+            }
         };
     }
 
     async function getNbuRate() {
         try {
-            const responseToNBU = await fetch('https://bank.gov.u/NBUStatService/v1/statdirectory/dollar_info?json');
-            const parsed = await responseToNBU.json();
+            const requestToNbu = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/dollar_info?json');
+            const parsed = await requestToNbu.json();
             nbuRate = +(parsed[0].rate);
+            const dataToLS = `${parsed[0].rate}, ${new Date()}`;
+            localStorage.setItem("excangeRate", dataToLS);
         } catch (e) {
-            nbuRate = `${langObj?.fetchNbuErrorView || langObjError.unk}`;
-            console.log(`Error retrieving bank data: ${e}`);
+            const dataFromLS = localStorage.getItem("excangeRate");
+            if (dataFromLS) {
+                const date = dateNormalize(dataFromLS.split(", ")[1]);
+                nbuRate = +(dataFromLS.split(", ")[0]);
+                showPopup(`${langObj?.fetchNbuErrorMessage || langObjError.error} ${date}`);
+            } else {
+                nbuRate = `${langObjError.unk}`;
+                showPopup(`${langObj?.fetchNbuErrorMessage || langObjError.error} no date`);
+            }
+            console.error(`Error retrieving bank data: ${e}`);
         }
     }
 
     function setNbuRate() {
         if (typeof nbuRate === "number") {
-            currentRateField.children[1].innerHTML = `${nbuRate.toFixed(2)}&#8372;`;
+            nbuRateField.children[1].innerHTML = `${nbuRate.toFixed(2)}&#8372;`;
         } else {
-            currentRateField.children[1].textContent = `${langObj?.fetchNbuErrorView || langObjError.unk}`;
+            nbuRateField.children[1].textContent = `${langObj?.fetchNbuErrorView || langObjError.unk}`;
         };
     }
 
-    function showBtn() {
+    function showRenewBtn() {
         if (differenceRates >= 5) {
-            renewBtn.style.visibility = "visible";
+            renewBtn.style.display = "block";
             renewBtn.disabled = false;
         } else { 
-            renewBtn.style.visibility = "hidden";
+            renewBtn.style.display = "none";
             renewBtn.disabled = true;
         }
     }
 })  
+
+
+function dateNormalize(str) {
+    const date = new Date(str)
+    const pad = (n) => String(n).padStart(2, "0");
+  
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1); 
+    const year = date.getFullYear();
+  
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+  
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+} 
+
+function dateNormalizeFromZoho(dateZoho) {
+    const date = new Date(dateZoho);
+    const pad = (n) => String(n).padStart(2, "0");
+  
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1); 
+    const year = date.getFullYear();
+    const hours = +pad(date.getHours()) + Math.round(-date.getTimezoneOffset() / 60);
+    const minutes = pad(date.getMinutes());
+
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+} 
+
+function dateNormalizeForZoho(date) {
+    const offset = -date.getTimezoneOffset();
+    const sign = offset >= 0 ? '+' : '-';
+    const pad = (n) => String(Math.floor(Math.abs(n))).padStart(2, '0');
+    const hours = pad(offset / 60);
+    const minutes = pad(offset % 60);
+  
+    return date.toISOString().slice(0, 19) + sign + hours + ":" + minutes;
+}
+
+
+// function dateNormalize(date) {
+//     let str = new Date(date);
+
+//     const format = (x) => {
+//         let val = String(x);
+//         if(val.length === 1) return `0${val}`;
+//         return val;  
+//     }
+    
+//     return `${format(str.getDay())}.${format(str.getMonth() + 1)}.${str.getFullYear()} ${format(str.getHours())}:${format(str.getMinutes())}`
+// }
+
+
+
 
 
 

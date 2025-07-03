@@ -8,31 +8,69 @@
   </head>
   <body>
 
-    <button class="btn lang_btn">EN</button>
+    <button class="btn btn_lang">EN</button>
 
-    <div class="main">
-      <div class="rate_wrapper">
-        <div class="rate_item rate_current">
-          <h3>Курс НБУ</h3>
-          <h2>00.00&#8372;</h2>
-        </div>
-        <div class="rate_divider"></div>
-        <div class="rate_item rate_old">
-          <h3>Курс в угодi</h3>
-          <h2>00.00&#8372;</h2>
-        </div>
-        <div class="rate_divider"></div>
-        <div class="rate_item rate_difference">
-          <h3>Рiзниця курсiв</h3>
-          <h2>00.00%</h2>
-        </div>
-        <div class="rate_divider"></div>
+    <div class="wrapper">
 
-        <button class="btn rate_btn" disabled>Оновити</button>
-        
+      <div class="side side__left">
+
+        <div class="rate">
+
+          <h1 class="title rate_title">Рiзниця мiж курсом угоди i банкiвським курсом</h1>
+
+          <div class="wrap rate_wrapper">
+            <div class="rate_item rate_nbu">
+              <h3>Курс НБУ</h3>
+              <h2>00.00&#8372;</h2>
+            </div>
+            <div class="divider rate_divider"></div>
+            <div class="rate_item rate_deal">
+              <h3>Курс в угодi</h3>
+              <h2>00.00&#8372;</h2>
+            </div>
+            <div class="divider rate_divider"></div>
+            <div class="rate_item rate_difference">
+              <h3>Рiзниця курсiв</h3>
+              <h2>0.0%</h2>
+            </div>
+            <div class="divider rate_divider"></div>
+            <!-- <button class="test">SAVE</button> -->
+          </div>
+
+          <button 
+            class="btn btn_rate" 
+            disabled 
+            title="Оновлення курсу угоди згідно з поточним курсом банку"
+          >
+            Оновити
+          </button>
+        </div>
+
+        <div class="popup">Message</div>
+
+      </div>
+
+      <div class="side side__right">
+        <div class="history">
+          <h2 class="title history_title">Історія змін курсу</h2>
+          <div class="wrap history_wrapper">
+            <div class="history_topic">
+              <div class="history_col">Дата</div>
+              <div class="history_col">Курс НБУ</div>
+              <div class="history_col">Рiзниця</div>
+            </div>
+            <div class="history_list">
+              <div class="history_items"></div>
+              <div class="history_btns">
+                <button class="btn btn_begin" disabled>Вгору</button>
+                <button class="btn btn_prev" disabled>Попередні</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-
-    <div class="popup">Message</div>
 
     <script src="script.js"></script>
   </body>
