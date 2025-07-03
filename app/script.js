@@ -106,12 +106,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
     beginBtn.addEventListener("click", () => {
         historyOffset = 0;
-        console.log(historyOffset);
         setHistoryList();
     })
 
     prevBtn.addEventListener("click", () => {
-        console.log(historyOffset);
         setHistoryList();
     })
 
@@ -140,8 +138,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     
     function renderHistoryList() {
-        console.log(historyLength);
         historyList.innerHTML = "";
+
         if (!historyArray.length) {
             beginBtn.style.display = "none";
             prevBtn.style.display = "none";
@@ -334,17 +332,6 @@ function dateNormalizeForZoho(date) {
 }
 
 
-// function dateNormalize(date) {
-//     let str = new Date(date);
-
-//     const format = (x) => {
-//         let val = String(x);
-//         if(val.length === 1) return `0${val}`;
-//         return val;  
-//     }
-    
-//     return `${format(str.getDay())}.${format(str.getMonth() + 1)}.${str.getFullYear()} ${format(str.getHours())}:${format(str.getMinutes())}`
-// }
 
 
 
