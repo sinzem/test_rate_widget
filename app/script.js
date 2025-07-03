@@ -178,7 +178,7 @@ window.addEventListener("DOMContentLoaded", () => {
             element.innerHTML = ` 
                 <div class="history_item">
                     <div class="history_cell">${dateNormalizeFromZoho(new Date(card.Date))}</div>
-                    <div class="history_cell">${card.Rate}</div>
+                    <div class="history_cell">${card.Rate}&#8372;</div>
                     <div class="history_cell">${card.Difference.toFixed(1)}%</div>
                 </div>
                 <div class="divider" style="margin-top: 8px;"></div>
