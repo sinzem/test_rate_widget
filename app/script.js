@@ -315,7 +315,7 @@ function dateNormalizeFromZoho(dateZoho) {
     const day = pad(date.getDate());
     const month = pad(date.getMonth() + 1); 
     const year = date.getFullYear();
-    const hours = pad(date.getHours());
+    const hours = +pad(date.getHours()) + Math.round(-date.getTimezoneOffset() / 60);
     const minutes = pad(date.getMinutes());
 
     return `${day}.${month}.${year} ${hours}:${minutes}`;
