@@ -36,6 +36,8 @@ window.addEventListener("DOMContentLoaded", () => {
         id = data.EntityId;
         module = data.Entity;
 
+        ZOHO.CRM.UI.Resize({height: "342"});
+
         ZOHO.CRM.API.getRecord({ Entity: module, RecordID: id })
             .then((data) => { 
                 dealRate = +(data.data[0].Exchange_rates);
@@ -308,14 +310,16 @@ function dateNormalize(str) {
     return `${day}.${month}.${year} ${hours}:${minutes}`;
 } 
 
-function dateNormalizeFromZoho(dateZoho) {
-    const date = new Date(dateZoho);
+function dateNormalizeFromZoho(str) {
+    const time = new Date(str);
+    const offset = -time.getTimezoneOffset();
+    const date = new Date(Date.parse(time) + offset * 60000)
     const pad = (n) => String(n).padStart(2, "0");
   
     const day = pad(date.getDate());
     const month = pad(date.getMonth() + 1); 
     const year = date.getFullYear();
-    const hours = +pad(date.getHours()) + Math.round(-date.getTimezoneOffset() / 60);
+    const hours = +pad(date.getHours());
     const minutes = pad(date.getMinutes());
 
     return `${day}.${month}.${year} ${hours}:${minutes}`;
