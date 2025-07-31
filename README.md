@@ -78,8 +78,7 @@ Exchange Rate Checker — Вiджет для Zoho CRM
     https://github.com/sinzem/test_rate_widget
     Розроблено у рамках тестового завдання
 
-Автор:
-    Сергій Іноземцев 
+
 
 
 
